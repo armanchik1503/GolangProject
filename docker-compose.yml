@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  #note this databaseservice name is what we will use instead
+  #of localhost when using migrate as compose assigns
+  #the service name as host
+  #for example if we had another container in the same compose
+  #that wnated to access this service port 2000 we would have written
+  # databaseservicename:2000
+  databaseservicename:
+    image: postgres:13.3-alpine
+
+    restart: always
+
+    ports:
+      - "5432"
+
+    environment:
+      POSTGRES_PASSWORD: arman2002
+      POSTGRES_USER: postgres
+      POSTGRES_DB: todo-db
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    #if we had another container that wanted to access migrate container at let say
+    #port 1000
+    #and it's in the same compose file  we would have written migrate:1000
+  migrate:
+    image: migrate/migrate
+
+    depends_on:
+      - databaseservicename
+
+    volumes:
+      - Home/golang/projectGolang/schema/database
+    # here instead of localhost as the host we use databaseservicename as that is the name we gave to the postgres service
+    command:
+      [ "-path", "/database", "-database",  "postgres://postgres:arman2002@localhost:5432/postgres?sslmode=disable", "up" ]
+volumes:
+  pgdata:
